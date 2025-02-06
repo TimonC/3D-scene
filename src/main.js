@@ -45,7 +45,6 @@ doorMaterial.diffuseTexture.uScale = 1;
 doorMaterial.diffuseTexture.vScale = 1;
 door.material = doorMaterial;
 
-
  const minX = transformerBox.position.x - transformerBox.scaling.x - door.scaling.x/4;  // Left limit of the box
  const maxX = transformerBox.position.x + transformerBox.scaling.x + door.scaling.x/4;  // Right limit of the box
  const doorDragBehavior = new BABYLON.PointerDragBehavior({
@@ -54,8 +53,36 @@ door.material = doorMaterial;
 doorDragBehavior.validateDrag = (target) => {
     return target.x >= minX && target.x <= maxX;
 };
-door.addBehavior(doorDragBehavior);
 
+// Variables for hover and drag state
+let isDragging = false;
+doorDragBehavior.onDragStartObservable.add(function () {
+  isDragging = true;
+  doorMaterial.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Set emissive color to gray during dragging
+});
+
+// Event listener for drag end
+doorDragBehavior.onDragEndObservable.add(function () {
+  isDragging = false;
+  doorMaterial.emissiveColor = new BABYLON.Color3(0, 0, 0); // Reset emissive color when dragging ends
+});
+
+// Add event listeners to change cursor on hover
+scene.onPointerObservable.add(function (evt) {
+  var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+  
+  // Check if the mouse is over the sphere
+  if (pickResult.pickedMesh === door) {
+      // Change the cursor to "pointer" when hovering over the sphere
+      document.body.style.cursor = "pointer";
+  } else {
+      // Revert to default cursor when not hovering
+      document.body.style.cursor = "default";
+  }
+});
+
+
+door.addBehavior(doorDragBehavior);
  return scene;
 }
 
